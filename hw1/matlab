@@ -1,0 +1,75 @@
+function MSE551Hw1(~)
+
+o = 3.405;
+k_b = 1.3807*10^-23;
+e = 119.8*k_b;
+
+%Setup a 3-D cubic box consisting of a 3X3X3 FCC crystal (Argon)
+a = 5.25;
+cube = zeros(108,3);
+V = zeros(sum(1:107));
+F_x = zeros(sum(1:107));
+F_y = zeros(sum(1:107));
+F_z = zeros(sum(1:107));
+%Creating cubes, one (four atoms per line), 108 total
+cube(1:4,:) = [0 0 0; 0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+cube(5:8,:) = [a 0 0;a a/2 a/2;(3*a)/2 0 a/2;(3*a)/2 a/2 0];
+cube(9:12,:) = [2*a 0 0;2*a a/2 a/2;(5*a)/2 0 a/2;(5*a)/2 a/2 0];
+cube(13:16,:) = [0 a 0;0 a/2 (3*a)/2;a/2 a a/2;a/2 (3*a)/2 0];
+cube(17:20,:) = [0 2*a 0;0 a/2 (5*a)/2;a/2 2*a a/2;a/2 (5*a)/2 0];
+%Need to change values to properly show different cubes
+%cube(21:24,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(25:28,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(29:32,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(33:36,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(37:40,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(41:44,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(45:48,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(49:52,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(53:56,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(57:60,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(61:64,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(65:68,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(69:72,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(73:76,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(77:80,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(81:84,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(85:88,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(89:92,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(93:96,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(97:100,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(101:104,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+%cube(105:108,:) = [0 0 0;0 a/2 a/2;a/2 0 a/2;a/2 a/2 0];
+
+A=4*e*o^12;
+B=3*e*o^6;
+%Assuming l_x, l_y, l_z is the same due to cube shape, will call L
+L = a;
+%Use periodic boundary conditions
+for i = 1:107
+    for j = 2:108
+        deltx = cube(i,1) - cube(j,1);
+        delty = cube(i,2) - cube(j,2);
+        deltz = cube(i,3) - cube(j,3);
+        
+        xpb = deltx - (round(deltx/L))*L;
+        ypb = delty - (round(delty/L))*L;
+        zpb = deltz - (round(deltz/L))*L;
+        
+        r = sqrt((xpb^2) + (ypb^2) + (zpb^2));
+%Use Lennard-Jones potential to represent the interaction between atoms
+        V(j) = (A/(r^12)) - (B/(r^6));
+%Evaluate the force on every atom
+        drdx = (cube(i,1)-cube(j,1))/r;
+        drdy = (cube(i,2)-cube(j,2))/r;
+        drdz = (cube(i,3)-cube(j,3))/r;
+        
+        F_x(j) = -1*((((-12*A)/(r^13))*drdx)+(((6*B)/(r^7))*drdx));
+        F_y(j) = -1*((((-12*A)/(r^13))*drdy)+(((6*B)/(r^7))*drdy));
+        F_z(j) = -1*((((-12*A)/(r^13))*drdz)+(((6*B)/(r^7))*drdz));
+    end
+end
+%Calculate the energy of the total system, sum values of array V
+%Total force, sum values of F arrays 
+end
+
